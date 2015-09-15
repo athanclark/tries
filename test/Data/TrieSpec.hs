@@ -1,6 +1,6 @@
 module Data.TrieSpec (spec) where
 
-import Data.Trie
+import Data.Trie.List as L
 
 import Test.Tasty
 import Test.Tasty.QuickCheck as QC

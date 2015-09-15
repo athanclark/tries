@@ -13,12 +13,16 @@ Library
   Default-Language:     Haskell2010
   HS-Source-Dirs:       src
   GHC-Options:          -Wall
-  Exposed-Modules:      Data.Trie
+  Exposed-Modules:      Data.Trie.Knuth
+                        Data.Trie.List
+                        Data.Trie.List.Internal
                         Data.Trie.Map
+                        Data.Trie.Pseudo
   Build-Depends:        base >= 4.6 && < 5
                       , containers
                       , semigroups
                       , rose-trees
+                      , keys
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0
@@ -28,11 +32,31 @@ Test-Suite spec
   Ghc-Options:          -Wall
   Main-Is:              Spec.hs
   Build-Depends:        base
+                      , tries
                       , tasty
                       , tasty-quickcheck
                       , tasty-hunit
                       , QuickCheck
                       , quickcheck-instances
+                      , containers
+                      , semigroups
+                      , rose-trees
+                      , keys
+
+Benchmark bench
+  Type:                 exitcode-stdio-1.0
+  Default-Language:     Haskell2010
+  Hs-Source-Dirs:       src
+                      , bench
+  Ghc-Options:          -Wall
+  Main-Is:              Bench.hs
+  Build-Depends:        base
+                      , tries
+                      , criterion
+                      -- , containers
+                      -- , semigroups
+                      -- , rose-trees
+                      -- , keys
 
 Source-Repository head
   Type:                 git

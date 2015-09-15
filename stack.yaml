@@ -1,0 +1,7 @@
+flags: {}
+packages:
+- '.'
+extra-deps:
+  - rose-trees-0.0.1
+  - pseudo-trie-0.0.4.3
+resolver: nightly-2015-09-10
