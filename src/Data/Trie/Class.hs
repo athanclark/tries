@@ -1,6 +1,6 @@
 {-# LANGUAGE
     MultiParamTypeClasses
-
+  , FunctionalDependencies
   #-}
 
 module Data.Trie.Class where
@@ -12,13 +12,14 @@ import qualified Data.ByteString as BS
 import Data.Function.Syntax
 import Data.Maybe (isJust, fromMaybe)
 import Data.Monoid
+import Data.Foldable as F
 import Data.Functor.Identity (Identity (..))
 
 
 -- | Class representing tries with single-threaded insertion, deletion, and lookup.
 -- @forall ts ps a. isJust $ lookupPath ps (insertPath ps a ts)@
 -- @forall ts ps. isNothing $ lookupPath ps (deletePath ps ts)@
-class Trie p s t where
+class Trie p s t | t -> p where
   lookup :: p s -> t s a -> Maybe a
   insert :: p s -> a -> t s a -> t s a
   delete :: p s -> t s a -> t s a
@@ -35,8 +36,13 @@ notMember :: Trie p s t => p s -> t s a -> Bool
 notMember = not .* member
 
 
-size :: Foldable t => t x -> Int
+size :: Foldable t => t a -> Int
 size = getSum . foldMap (Sum . const 1)
+
+-- * Conversion
+
+fromFoldable :: (Foldable f, Monoid (t s a), Trie p s t) => f (p s, a) -> t s a
+fromFoldable = F.foldr (uncurry insert) mempty
 
 
 -- class HasLookupNearest s where

@@ -26,6 +26,8 @@ import Data.Maybe
 import Data.Monoid
 
 
+-- * One Step
+
 newtype MapStep c p a = MapStep
   { unMapStep :: Map.Map p (Maybe a, Maybe (c p a)) }
   deriving (Show, Eq, Ord, Functor, Foldable, Traversable)
@@ -48,30 +50,75 @@ instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
     | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
                   in  MapStep $ Map.insert p (mx, delete (NE.fromList ps) <$> mxs) xs
 
--- instance (Ord p, Monoid (c p a), Monoid a) => Monoid (MapStep c p a) where
---   mempty = empty
---   mappend (MapStep xs) (MapStep ys) = MapStep $ Map.unionWith mappend xs ys
---
--- empty :: MapStep c p a
--- empty = MapStep Map.empty
---
--- singleton :: p -> a -> MapStep c p a
--- singleton p x = MapStep $ Map.singleton p (Just x, Nothing)
---
---
--- newtype MapTrie p a = MapTrie
---   { unMapTrie :: MapStep MapTrie p a }
---   deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Monoid, Trie (NonEmpty p))
---
--- type instance K.Key (MapTrie p) = NonEmpty p
+instance (Ord s, Monoid (c s a), Monoid a) => Monoid (MapStep c s a) where
+  mempty = empty
+  mappend (MapStep xs) (MapStep ys) = MapStep $ Map.unionWith mappend xs ys
+
+empty :: MapStep c s a
+empty = MapStep Map.empty
+
+singleton :: s -> a -> MapStep c s a
+singleton p x = MapStep $ Map.singleton p (Just x, Nothing)
+
+
+-- * Fixpoint of Steps
+
+newtype MapTrie s a = MapTrie
+  { unMapTrie :: MapStep MapTrie s a }
+  deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Monoid, Trie NonEmpty s)
+
+type instance K.Key (MapTrie s) = NonEmpty s
 
 -- instance K.Keyed (MapTrie t) where
   -- mapWithKey
 
--- instance Ord p => K.Lookup (MapTrie p) where
---   lookup = lookup
+instance Ord s => K.Lookup (MapTrie s) where
+  lookup = lookup
+
+-- * Conversion
+
+keys :: Ord s => MapTrie s a -> [NonEmpty s]
+keys (MapTrie (MapStep xs)) = let ks = Map.keys xs
+                              in F.concatMap go ks
+  where go k = let (_,mxs) = fromJust $ Map.lookup k xs
+               in fmap (k :|) $ fromMaybe [] $ do xs' <- mxs
+                                                  return $ NE.toList <$> keys xs'
+
+elems :: MapTrie s a -> [a]
+elems = F.toList
 
 -- * Query
+
+subtrie :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (MapTrie s a)
+subtrie (p:|ps) (MapTrie (MapStep xs))
+  | F.null ps = do (_,mxs) <- Map.lookup p xs
+                   mxs
+  | otherwise = do (_,mxs) <- Map.lookup p xs
+                   subtrie (NE.fromList ps) =<< mxs
+
+-- lookupNearest ~ match
+match :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (NonEmpty s, a, [s])
+match (p:|ps) (MapTrie (MapStep xs))
+  | F.null ps = do (mx,_) <- Map.lookup p xs
+                   x <- mx
+                   return (p:|[], x, [])
+  | otherwise = do (_,mxs) <- Map.lookup p xs
+                   (p',y,ps') <- match (NE.fromList ps) =<< mxs
+                   return (p:| NE.toList p', y, ps')
+
+-- lookupThrough ~ matches
+matches :: Ord s => NonEmpty s -> MapTrie s a -> [(NonEmpty s, a, [s])]
+matches (p:|ps) (MapTrie (MapStep xs))
+  | F.null ps = F.toList $ do (mx,_) <- Map.lookup p xs
+                              x <- mx
+                              return (p:|[], x, [])
+  | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
+                    mrs = matches (NE.fromList ps) <$> mxs
+                    x = fromMaybe [] $ ((:[]) . (p:|[],,ps)) <$> mx
+                    rs = fromMaybe [] mrs
+                in x ++ (prepend1of3 <$> rs)
+  where prepend1of3 (a,b,c) = (p:| NE.toList a,b,c)
+
 
 --
 -- lookupVia :: Ord t => (t -> Map.Map t (Maybe x, Maybe (MapTrie t x)) -> Maybe (t, (Maybe x, Maybe (MapTrie t x))))
@@ -83,23 +130,3 @@ instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
 --   _  -> do (_,(_,mxs)) <- Map.lookupLT t xs
 --            lookupVia f (NE.fromList ts) =<< mxs
 --
---
---
--- -- * Construction
---
---
--- insert ::Ord t => NonEmpty t -> x -> MapTrie t x -> MapTrie t x
--- insert (t:|ts) x (MapTrie xs) = case Map.lookup t xs of
---   Just (mx, mxs) -> case ts of
---     [] -> MapTrie $ Map.insert t (Just x, mxs) xs
---     _  -> MapTrie $ Map.insert t (mx, insert (NE.fromList ts) x <$> mxs) xs
---   Nothing -> MapTrie $ Map.insert t (Just x, Nothing) xs
---
--- update :: Ord t => (x -> Maybe x) -> NonEmpty t -> MapTrie t x -> MapTrie t x
--- update f (t:|ts) (MapTrie xs) = case ts of
---   [] -> MapTrie $ Map.update (\(mx',mxs') -> Just (f =<< mx', mxs')) t xs
---   _  -> MapTrie $ Map.update (\(mx',mxs') -> Just (mx',update f (NE.fromList ts) <$> mxs')) t xs
-
-
--- lookupThrough :: Ord t => NonEmpty t -> MapTrie t x -> [x]
--- lookupNearest?
