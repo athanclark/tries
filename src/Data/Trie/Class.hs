@@ -35,38 +35,15 @@ member = isJust .* lookup
 notMember :: Trie p s t => p s -> t s a -> Bool
 notMember = not .* member
 
-
-size :: Foldable t => t a -> Int
-size = getSum . foldMap (Sum . const 1)
-
 -- * Conversion
 
 fromFoldable :: (Foldable f, Monoid (t s a), Trie p s t) => f (p s, a) -> t s a
 fromFoldable = F.foldr (uncurry insert) mempty
 
 
--- class HasLookupNearest s where
---   lookupNearest :: NonEmpty t -> s t a -> Maybe a
---
--- class HasLookupThrough s where
---   lookupThrough :: NonEmpty t -> s t a -> [a]
---
--- class HasLookupLT s where
---   lookupLT :: Ord t => NonEmpty t -> s t a -> Maybe (NonEmpty t, a)
---
--- class HasLookupGT s where
---   lookupGT :: Ord t => NonEmpty t -> s t a -> Maybe (NonEmpty t, a)
---
--- class HasLookupLE s where
---   lookupLE :: Ord t => NonEmpty t -> s t a -> Maybe (NonEmpty t, a)
---
--- class HasLookupGE s where
---   lookupGE :: Ord t => NonEmpty t -> s t a -> Maybe (NonEmpty t, a)
-
-
 -- * ByteString-Trie
 
--- | Bytestring-trie, with an empty ByteString passed around for type inference.
+-- | Embeds an empty ByteString passed around for type inference.
 newtype BSTrie q a = BSTrie {unBSTrie :: (q, BT.Trie a)}
 
 makeBSTrie :: BT.Trie a -> BSTrie BS.ByteString a
