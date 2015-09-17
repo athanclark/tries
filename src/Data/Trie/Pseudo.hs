@@ -1,5 +1,7 @@
 {-# LANGUAGE
     DeriveFunctor
+  , DeriveFoldable
+  , DeriveTraversable
   , FlexibleInstances
   , ScopedTypeVariables
   #-}
@@ -25,23 +27,12 @@ import           Control.Arrow             (second)
 data PseudoTrie t a = More t (Maybe a) (NonEmpty (PseudoTrie t a))
                     | Rest (NonEmpty t) a
                     | Nil
-  deriving (Show, Eq, Functor)
+  deriving (Show, Eq, Functor, Foldable, Traversable)
 
 -- | Overwriting instance
 instance (Eq t) => Monoid (PseudoTrie t a) where
   mempty = Nil
   mappend = merge
-
--- | Depth first
-instance Foldable (PseudoTrie t) where
-  foldr _ acc Nil = acc
-  foldr f acc (Rest _ x) = f x acc
-  foldr f acc (More t Nothing xs) = foldr go acc xs
-    where
-      go z bcc = foldr f bcc z
-  foldr f acc (More t (Just x) xs) = foldr go (f x acc) xs
-    where
-      go z bcc = foldr f bcc z
 
 beginsWith :: (Eq t) => PseudoTrie t a -> t -> Bool
 beginsWith Nil _ = False
