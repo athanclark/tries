@@ -103,7 +103,7 @@ match :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (NonEmpty s, a, [s])
 match (p:|ps) (MapTrie (MapStep xs)) = do
   (mx,mxs) <- Map.lookup p xs
   let mFoundHere = do x <- mx
-                      return (p:|[], x, [])
+                      return (p:|[], x, ps)
   if F.null ps then mFoundHere
                else getFirst $ First (do (pre,y,suff) <- match (NE.fromList ps) =<< mxs
                                          return (p:|NE.toList pre, y, suff))
@@ -112,15 +112,13 @@ match (p:|ps) (MapTrie (MapStep xs)) = do
 -- | Returns a list of all the nodes along the path to the furthest point in the
 -- query, in order of the path walked from the root to the furthest point.
 matches :: Ord s => NonEmpty s -> MapTrie s a -> [(NonEmpty s, a, [s])]
-matches (p:|ps) (MapTrie (MapStep xs))
-  | F.null ps = F.toList $ do (mx,_) <- Map.lookup p xs
-                              x <- mx
-                              return (p:|[],x,[])
-  | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
-                    rs = fromMaybe [] $ matches (NE.fromList ps) <$> mxs
-                    mFoundHere = fromMaybe [] $ do x <- mx
-                                                   return [(p:|[],x,ps)]
-                in mFoundHere ++ (prependAncestry <$> rs)
+matches (p:|ps) (MapTrie (MapStep xs)) =
+  let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
+      foundHere = fromMaybe [] $ do x <- mx
+                                    return [(p:|[],x,ps)]
+  in if F.null ps then foundHere
+                  else let rs = fromMaybe [] $ matches (NE.fromList ps) <$> mxs
+                       in foundHere ++ (prependAncestry <$> rs)
   where prependAncestry (pre,x,suff) = (p:| NE.toList pre,x,suff)
 
 
