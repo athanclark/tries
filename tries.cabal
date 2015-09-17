@@ -16,7 +16,6 @@ Library
   Exposed-Modules:      Data.Trie.Class
                         Data.Trie.Knuth
                         Data.Trie.List
-                        Data.Trie.List.Internal
                         Data.Trie.Map
                         Data.Trie.Pseudo
   Build-Depends:        base >= 4.6 && < 5
