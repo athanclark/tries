@@ -50,9 +50,11 @@ instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
     | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
                   in  MapStep $ Map.insert p (mx, delete (NE.fromList ps) <$> mxs) xs
 
-instance (Ord s, Monoid (c s a), Monoid a) => Monoid (MapStep c s a) where
+
+instance (Ord s, Monoid (c s a)) => Monoid (MapStep c s a) where
   mempty = empty
-  mappend (MapStep xs) (MapStep ys) = MapStep $ Map.unionWith mappend xs ys
+  mappend (MapStep xs) (MapStep ys) = MapStep $ Map.unionWith go xs ys
+    where go (mx,mxs) (my,mys) = (getLast $ Last mx <> Last my, mxs <> mys)
 
 empty :: MapStep c s a
 empty = MapStep Map.empty
