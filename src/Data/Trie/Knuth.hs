@@ -1,5 +1,7 @@
 {-# LANGUAGE
     DeriveFunctor
+  , DeriveFoldable
+  , DeriveTraversable
   , GeneralizedNewtypeDeriving
   , FlexibleInstances
   , MultiParamTypeClasses
@@ -17,7 +19,7 @@ import Data.Trie.Class
 
 newtype KnuthTrie s x = KnuthTrie
   {unKnuthTrie :: KnuthForest (s, Maybe x)}
-  deriving (Show, Eq)
+  deriving (Show, Eq, Functor, Foldable, Traversable)
 
 instance Eq s => Trie NonEmpty s KnuthTrie where
   lookup _ (KnuthTrie Nil) = Nothing
