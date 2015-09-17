@@ -100,26 +100,28 @@ subtrie (p:|ps) (MapTrie (MapStep xs))
 
 -- lookupNearest ~ match
 match :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (NonEmpty s, a, [s])
-match (p:|ps) (MapTrie (MapStep xs))
-  | F.null ps = do (mx,_) <- Map.lookup p xs
-                   x <- mx
-                   return (p:|[], x, [])
-  | otherwise = do (_,mxs) <- Map.lookup p xs
-                   (p',y,ps') <- match (NE.fromList ps) =<< mxs
-                   return (p:| NE.toList p', y, ps')
+match (p:|ps) (MapTrie (MapStep xs)) = do
+  (mx,mxs) <- Map.lookup p xs
+  let mFoundHere = do x <- mx
+                      return (p:|[], x, [])
+  if F.null ps then mFoundHere
+               else getFirst $ First (do (pre,y,suff) <- match (NE.fromList ps) =<< mxs
+                                         return (p:|NE.toList pre, y, suff))
+                            <> First mFoundHere
 
--- lookupThrough ~ matches
+-- | Returns a list of all the nodes along the path to the furthest point in the
+-- query, in order of the path walked from the root to the furthest point.
 matches :: Ord s => NonEmpty s -> MapTrie s a -> [(NonEmpty s, a, [s])]
 matches (p:|ps) (MapTrie (MapStep xs))
   | F.null ps = F.toList $ do (mx,_) <- Map.lookup p xs
                               x <- mx
-                              return (p:|[], x, [])
+                              return (p:|[],x,[])
   | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
-                    mrs = matches (NE.fromList ps) <$> mxs
-                    x = fromMaybe [] $ ((:[]) . (p:|[],,ps)) <$> mx
-                    rs = fromMaybe [] mrs
-                in x ++ (prepend1of3 <$> rs)
-  where prepend1of3 (a,b,c) = (p:| NE.toList a,b,c)
+                    rs = fromMaybe [] $ matches (NE.fromList ps) <$> mxs
+                    mFoundHere = fromMaybe [] $ do x <- mx
+                                                   return [(p:|[],x,ps)]
+                in mFoundHere ++ (prependAncestry <$> rs)
+  where prependAncestry (pre,x,suff) = (p:| NE.toList pre,x,suff)
 
 
 --

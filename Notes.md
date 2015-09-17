@@ -2,13 +2,6 @@ Notes
 =====
 
 
-## Generic Size via Foldable
-
-```haskell
-size :: Foldable f => f a -> Integer
-size = getSum . foldMap (Sum . const 1)
-```
-
 ## `First` / `Last` for Data.Map
 
 ```haskell
