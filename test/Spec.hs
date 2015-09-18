@@ -1,4 +1,4 @@
-module Spec where
+module Main where
 
 import Data.TrieSpec
 
@@ -9,5 +9,4 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Testing..."
-  [spec]
+tests = testGroup "Testing..." trieSpec

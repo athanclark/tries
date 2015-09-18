@@ -24,6 +24,11 @@ import qualified Data.Key as K
 import qualified Data.Foldable as F
 import Data.Maybe
 import Data.Monoid
+import Control.Monad
+
+import Test.QuickCheck
+import Test.QuickCheck.Instances
+
 
 
 -- * One Step
@@ -32,23 +37,40 @@ newtype MapStep c p a = MapStep
   { unMapStep :: Map.Map p (Maybe a, Maybe (c p a)) }
   deriving (Show, Eq, Ord, Functor, Foldable, Traversable)
 
+instance (Arbitrary a, Arbitrary p, Arbitrary (c p a), Ord p) => Arbitrary (MapStep c p a) where
+  arbitrary = sized go
+    where
+      go n = do
+        i <- choose (0,n)
+        xs <- replicateM i $ (,) <$> arbitrary <*> resize (floor (fromIntegral n / 2 :: Float)) arbitrary
+        return $ MapStep $ Map.fromList xs
 
+
+-- | No insertion instance - requires children nodes to be a monoid. Use @Data.Trie.Map.insert@
+-- instead.
 instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
   lookup (p:|ps) (MapStep xs)
     | F.null ps = do (mx,_) <- Map.lookup p xs
                      mx
     | otherwise = do (_,mxs) <- Map.lookup p xs
                      lookup (NE.fromList ps) =<< mxs
-  insert (p:|ps) x (MapStep xs)
-    | F.null ps = let mxs = snd =<< Map.lookup p xs
-                  in  MapStep $ Map.insert p (Just x,mxs) xs
-    | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
-                  in  MapStep $ Map.insert p (mx, insert (NE.fromList ps) x <$> mxs) xs
   delete (p:|ps) (MapStep xs)
     | F.null ps = let mxs = snd =<< Map.lookup p xs
                   in  MapStep $ Map.insert p (Nothing,mxs) xs
     | otherwise = let (mx,mxs) = fromMaybe (Nothing,Nothing) $ Map.lookup p xs
                   in  MapStep $ Map.insert p (mx, delete (NE.fromList ps) <$> mxs) xs
+
+
+insert :: ( Ord p
+          , Trie NonEmpty p c
+          , Monoid (c p a)
+          ) => NonEmpty p -> a -> MapStep c p a -> MapStep c p a
+insert (p:|ps) x (MapStep xs)
+  | F.null ps = let mxs = snd =<< Map.lookup p xs
+                in  MapStep $ Map.insert p (Just x,mxs) xs
+  | otherwise = let mx = fst =<< Map.lookup p xs
+                    xs' = fromMaybe mempty (snd =<< Map.lookup p xs)
+                in  MapStep $ Map.insert p (mx, Just $ Data.Trie.Class.insert (NE.fromList ps) x xs') xs
 
 
 instance (Ord s, Monoid (c s a)) => Monoid (MapStep c s a) where
@@ -67,7 +89,12 @@ singleton p x = MapStep $ Map.singleton p (Just x, Nothing)
 
 newtype MapTrie s a = MapTrie
   { unMapTrie :: MapStep MapTrie s a }
-  deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Monoid, Trie NonEmpty s)
+  deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Monoid, Arbitrary)
+
+instance Ord s => Trie NonEmpty s MapTrie where
+  lookup ts (MapTrie xs) = lookup ts xs
+  delete ts (MapTrie xs) = MapTrie $ delete ts xs
+  insert ts x (MapTrie xs) = MapTrie $ Data.Trie.Map.insert ts x xs
 
 type instance K.Key (MapTrie s) = NonEmpty s
 

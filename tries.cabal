@@ -29,10 +29,10 @@ Library
                       , composition-extra >= 2.0.0
                       , keys
                       , sets >= 0.0.5
-                      , mtl
-                      , criterion
+                      , QuickCheck
+                      , quickcheck-instances
 
-Test-Suite spec
+Test-Suite test
   Type:                 exitcode-stdio-1.0
   Default-Language:     Haskell2010
   Hs-Source-Dirs:       src
@@ -43,7 +43,6 @@ Test-Suite spec
                       , tries
                       , tasty
                       , tasty-quickcheck
-                      , tasty-hunit
                       , QuickCheck
                       , quickcheck-instances
                       , containers
@@ -55,6 +54,8 @@ Test-Suite spec
                       , composition-extra
                       , keys
                       , sets
+                      , mtl
+
 
 Benchmark bench
   Type:                 exitcode-stdio-1.0
