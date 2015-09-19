@@ -5,6 +5,8 @@ import qualified Data.List.NonEmpty as NE
 import Data.Tree (Tree (..))
 import Data.Trie.List as L
 import Data.Trie.Map as M
+import Data.Tree.Knuth.Forest as K
+import Data.Trie.Knuth as K
 import Data.Trie.Class as TC
 import qualified Data.Map as Map
 import Criterion.Main
@@ -36,16 +38,25 @@ genMapTrie n = MapTrie $ MapStep $ Map.singleton 0
                                  else Just $ MapTrie $ MapStep $ genMapTree (n-1))) 1
 
 
+genKnuthTrie :: Int -> KnuthTrie Int Int
+genKnuthTrie n = KnuthTrie $ Fork (0, Just 0) (genKnuthForest n n) Nil
+  where
+    genKnuthForest :: Int -> Int -> KnuthForest (Int, Maybe Int)
+    genKnuthForest 0 _ = Nil
+    genKnuthForest n s = let cs = if n <= 1 then Nil else genKnuthForest (n-1) (n-1)
+                             ss = if s <= 1 then Nil else genKnuthForest n (s-1)
+                         in Fork (s, Just s) cs ss
+
 
 main = defaultMain
   [ bgroup "lookup"
     [ bgroup "ListTrie"
-      [ bench "1" $ whnf (L.lookup $ 0 :| [100])         (genListTrie 100)
-      , bench "2" $ whnf (L.lookup $ 0 :| [100,99..81])  (genListTrie 100)
-      , bench "3" $ whnf (L.lookup $ 0 :| [100,99..61])  (genListTrie 100)
-      , bench "4" $ whnf (L.lookup $ 0 :| [100,99..41])  (genListTrie 100)
-      , bench "5" $ whnf (L.lookup $ 0 :| [100,99..21])  (genListTrie 100)
-      , bench "6" $ whnf (L.lookup $ 0 :| [100,99..1])   (genListTrie 100)
+      [ bench "1" $ whnf (TC.lookup $ 0 :| [100])         (genListTrie 100)
+      , bench "2" $ whnf (TC.lookup $ 0 :| [100,99..81])  (genListTrie 100)
+      , bench "3" $ whnf (TC.lookup $ 0 :| [100,99..61])  (genListTrie 100)
+      , bench "4" $ whnf (TC.lookup $ 0 :| [100,99..41])  (genListTrie 100)
+      , bench "5" $ whnf (TC.lookup $ 0 :| [100,99..21])  (genListTrie 100)
+      , bench "6" $ whnf (TC.lookup $ 0 :| [100,99..1])   (genListTrie 100)
       ]
     , bgroup "MapTrie"
       [ bench "1" $ whnf (TC.lookup $ 0 :| [100])         (genMapTrie 100)
@@ -54,6 +65,14 @@ main = defaultMain
       , bench "4" $ whnf (TC.lookup $ 0 :| [100,99..41])  (genMapTrie 100)
       , bench "5" $ whnf (TC.lookup $ 0 :| [100,99..21])  (genMapTrie 100)
       , bench "6" $ whnf (TC.lookup $ 0 :| [100,99..1])   (genMapTrie 100)
+      ]
+    , bgroup "KnuthTrie"
+      [ bench "1" $ whnf (TC.lookup $ 0 :| [100])         (genKnuthTrie 100)
+      , bench "2" $ whnf (TC.lookup $ 0 :| [100,99..81])  (genKnuthTrie 100)
+      , bench "3" $ whnf (TC.lookup $ 0 :| [100,99..61])  (genKnuthTrie 100)
+      , bench "4" $ whnf (TC.lookup $ 0 :| [100,99..41])  (genKnuthTrie 100)
+      , bench "5" $ whnf (TC.lookup $ 0 :| [100,99..21])  (genKnuthTrie 100)
+      , bench "6" $ whnf (TC.lookup $ 0 :| [100,99..1])   (genKnuthTrie 100)
       ]
     ]
   ]
