@@ -21,6 +21,7 @@ Library
                         Data.Trie.Pseudo
   Build-Depends:        base >= 4.6 && < 5
                       , containers
+--                      , TernaryTrees
                       , bytestring
                       , bytestring-trie
                       , semigroups
@@ -51,6 +52,7 @@ Test-Suite test
                       , tasty-quickcheck
                       , QuickCheck
                       , quickcheck-instances
+--                      , TernaryTrees
                       , containers
                       , bytestring
                       , bytestring-trie
@@ -79,6 +81,7 @@ Benchmark bench
                       , tries
                       , criterion
                       , containers
+--                      , TernaryTrees
                       , bytestring
                       , bytestring-trie
                       , semigroups

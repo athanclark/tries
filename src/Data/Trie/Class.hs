@@ -14,6 +14,7 @@ import Data.Maybe (isJust, fromMaybe)
 import Data.Monoid
 import Data.Foldable as F
 import Data.Functor.Identity (Identity (..))
+-- import Data.Map.TernaryMap as TM
 
 
 -- | Class representing tries with single-threaded insertion, deletion, and lookup.
@@ -40,6 +41,13 @@ notMember = not .* member
 fromFoldable :: (Foldable f, Monoid (t s a), Trie p s t) => f (p s, a) -> t s a
 fromFoldable = F.foldr (uncurry insert) mempty
 
+
+-- * Ternary Map
+
+-- TODO
+-- instance Ord k => Trie [] k TernaryMap where
+--   lookup = TM.lookup
+--   delete = TM.delete
 
 -- * ByteString-Trie
 
