@@ -50,10 +50,8 @@ instance (Arbitrary a, Arbitrary p, Arbitrary (c p a), Ord p) => Arbitrary (MapS
 -- instead.
 instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
   lookup (p:|ps) (MapStep xs)
-    | F.null ps = do (mx,_) <- Map.lookup p xs
-                     mx
-    | otherwise = do (_,mxs) <- Map.lookup p xs
-                     lookup (NE.fromList ps) =<< mxs
+    | F.null ps = fst =<< Map.lookup p xs
+    | otherwise = lookup (NE.fromList ps) =<< snd =<< Map.lookup p xs
   delete (p:|ps) (MapStep xs)
     | F.null ps = let mxs = snd =<< Map.lookup p xs
                   in  MapStep $ Map.insert p (Nothing,mxs) xs
@@ -68,7 +66,7 @@ insert :: ( Ord p
 insert (p:|ps) x (MapStep xs)
   | F.null ps = let mxs = snd =<< Map.lookup p xs
                 in  MapStep $ Map.insert p (Just x,mxs) xs
-  | otherwise = let mx = fst =<< Map.lookup p xs
+  | otherwise = let mx  = fst =<< Map.lookup p xs
                     xs' = fromMaybe mempty (snd =<< Map.lookup p xs)
                 in  MapStep $ Map.insert p (mx, Just $ Data.Trie.Class.insert (NE.fromList ps) x xs') xs
 
@@ -120,10 +118,8 @@ elems = F.toList
 
 subtrie :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (MapTrie s a)
 subtrie (p:|ps) (MapTrie (MapStep xs))
-  | F.null ps = do (_,mxs) <- Map.lookup p xs
-                   mxs
-  | otherwise = do (_,mxs) <- Map.lookup p xs
-                   subtrie (NE.fromList ps) =<< mxs
+  | F.null ps = snd =<< Map.lookup p xs
+  | otherwise = subtrie (NE.fromList ps) =<< snd =<< Map.lookup p xs
 
 -- lookupNearest ~ match
 match :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (NonEmpty s, a, [s])

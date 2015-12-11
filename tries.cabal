@@ -1,5 +1,5 @@
 Name:                   tries
-Version:                0.0.2
+Version:                0.0.3
 Author:                 Athan Clark <athan.clark@gmail.com>
 Maintainer:             Athan Clark <athan.clark@gmail.com>
 License:                BSD3
@@ -15,21 +15,24 @@ Library
   HS-Source-Dirs:       src
   GHC-Options:          -Wall
   Exposed-Modules:      Data.Trie.Class
+                        Data.Trie.HashMap
                         Data.Trie.Knuth
                         Data.Trie.List
                         Data.Trie.Map
                         Data.Trie.Pseudo
   Build-Depends:        base >= 4.6 && < 5
-                      , containers
---                      , TernaryTrees
                       , bytestring
                       , bytestring-trie
-                      , semigroups
-                      , rose-trees >= 0.0.2
                       , composition
                       , composition-extra >= 2.0.0
+                      , containers
+                      , hashable
                       , keys
+--                      , TernaryTrees
+                      , rose-trees >= 0.0.2
+                      , semigroups
                       , sets >= 0.0.5
+                      , unordered-containers
                       , QuickCheck
                       , quickcheck-instances
 
@@ -47,22 +50,24 @@ Test-Suite test
                         Data.Trie.Map
                         Data.Trie.Pseudo
   Build-Depends:        base
+                      , bytestring
+                      , bytestring-trie
+                      , composition
+                      , composition-extra
+--                      , TernaryTrees
+                      , containers
+                      , hashable
+                      , keys
+                      , mtl
+                      , rose-trees
+                      , sets
+                      , semigroups
                       , tries
                       , tasty
                       , tasty-quickcheck
+                      , unordered-containers
                       , QuickCheck
                       , quickcheck-instances
---                      , TernaryTrees
-                      , containers
-                      , bytestring
-                      , bytestring-trie
-                      , semigroups
-                      , rose-trees
-                      , composition
-                      , composition-extra
-                      , keys
-                      , sets
-                      , mtl
 
 
 Benchmark bench
@@ -78,21 +83,23 @@ Benchmark bench
                         Data.Trie.Map
                         Data.Trie.Pseudo
   Build-Depends:        base
-                      , tries
-                      , criterion
-                      , containers
---                      , TernaryTrees
                       , bytestring
                       , bytestring-trie
-                      , semigroups
-                      , rose-trees
                       , composition
                       , composition-extra
+                      , containers
+--                      , TernaryTrees
+                      , hashable
                       , keys
-                      , sets
                       , mtl
+                      , rose-trees
+                      , semigroups
+                      , sets
+                      , tries
+                      , unordered-containers
                       , QuickCheck
                       , quickcheck-instances
+                      , criterion
 
 Source-Repository head
   Type:                 git

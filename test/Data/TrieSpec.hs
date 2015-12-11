@@ -11,6 +11,7 @@ import Data.Trie.Class as TC
 import Data.Trie.List  as L
 import Data.Tree (Tree (..))
 import Data.Trie.Map   as M hiding (insert)
+import Data.Trie.HashMap as HM hiding (insert)
 import Data.Trie.Knuth as K hiding (lookup, insert, delete)
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
@@ -31,6 +32,10 @@ trieSpec =
   , testGroup "Data.Trie.Map"
     [ QC.testProperty "lookup after insertion should exist" lookupInsertExists_Map
     , QC.testProperty "lookup after deletion should not exist" lookupDeleteNotExists_Map
+    ]
+  , testGroup "Data.Trie.HashMap"
+    [ QC.testProperty "lookup after insertion should exist" lookupInsertExists_HashMap
+    , QC.testProperty "lookup after deletion should not exist" lookupDeleteNotExists_HashMap
     ]
   , testGroup "Data.Trie.Knuth"
     [ QC.testProperty "lookup after insertion should exist" lookupInsertExists_Knuth
@@ -57,6 +62,9 @@ lookupInsertExists_List (PathWithHead (ts,trie)) x = lookupInsertExists ts x tri
 lookupInsertExists_Map :: NonEmpty Int -> Int -> MapTrie Int Int -> Bool
 lookupInsertExists_Map = lookupInsertExists
 
+lookupInsertExists_HashMap :: NonEmpty Int -> Int -> HashMapTrie Int Int -> Bool
+lookupInsertExists_HashMap = lookupInsertExists
+
 lookupInsertExists_Knuth :: NonEmpty Int -> Int -> KnuthTrie Int Int -> Bool
 lookupInsertExists_Knuth = lookupInsertExists
 
@@ -74,6 +82,9 @@ lookupDeleteNotExists_List = lookupDeleteNotExists
 
 lookupDeleteNotExists_Map :: NonEmpty Int -> MapTrie Int Int -> Bool
 lookupDeleteNotExists_Map = lookupDeleteNotExists
+
+lookupDeleteNotExists_HashMap :: NonEmpty Int -> HashMapTrie Int Int -> Bool
+lookupDeleteNotExists_HashMap = lookupDeleteNotExists
 
 lookupDeleteNotExists_Knuth :: NonEmpty Int -> KnuthTrie Int Int -> Bool
 lookupDeleteNotExists_Knuth = lookupDeleteNotExists
