@@ -2,6 +2,8 @@
     DeriveFunctor
   , DeriveFoldable
   , DeriveTraversable
+  , DeriveGeneric
+  , DeriveDataTypeable
   , GeneralizedNewtypeDeriving
   , TupleSections
   , TypeFamilies
@@ -19,23 +21,30 @@ import qualified Data.Map as Map
 import           Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 
-import qualified Data.Set.Class as S
 import qualified Data.Key as K
 import qualified Data.Foldable as F
 import Data.Maybe
 import Data.Monoid
 import Control.Monad
 
+import Data.Data
+import GHC.Generics
+import Control.DeepSeq
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+import Test.QuickCheck.Instances ()
 
 
 
 -- * One Step
 
 newtype MapStep c p a = MapStep
-  { unMapStep :: Map.Map p (Maybe a, Maybe (c p a)) }
-  deriving (Show, Eq, Ord, Functor, Foldable, Traversable)
+  { unMapStep :: Map.Map p (Maybe a, Maybe (c p a))
+  } deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Generic, Data, Typeable)
+
+instance ( NFData (c p a)
+         , NFData p
+         , NFData a
+         ) => NFData (MapStep c p a)
 
 instance (Arbitrary a, Arbitrary p, Arbitrary (c p a), Ord p) => Arbitrary (MapStep c p a) where
   arbitrary = sized go

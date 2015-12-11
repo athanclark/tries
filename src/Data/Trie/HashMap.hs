@@ -3,6 +3,8 @@
   , DeriveFunctor
   , DeriveFoldable
   , DeriveTraversable
+  , DeriveGeneric
+  , DeriveDataTypeable
   , MultiParamTypeClasses
   , FlexibleInstances
   , FlexibleContexts
@@ -23,17 +25,24 @@ import qualified Data.HashMap.Lazy  as HM
 import qualified Data.Key           as K
 import Control.Monad
 
+import Data.Data
+import GHC.Generics
+import Control.DeepSeq
 import Prelude hiding (lookup, null)
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+import Test.QuickCheck.Instances ()
 
 
 -- * One Step
 
 newtype HashMapStep c p a = HashMapStep
   { unHashMapStep :: HM.HashMap p (Maybe a, Maybe (c p a))
-  } deriving (Show, Eq, Functor, Foldable, Traversable)
+  } deriving (Show, Eq, Functor, Foldable, Traversable, Generic, Data, Typeable)
 
+instance ( NFData (c p a)
+         , NFData p
+         , NFData a
+         ) => NFData (HashMapStep c p a)
 
 instance ( Arbitrary a
          , Arbitrary p

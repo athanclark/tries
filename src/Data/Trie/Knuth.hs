@@ -2,6 +2,8 @@
     DeriveFunctor
   , DeriveFoldable
   , DeriveTraversable
+  , DeriveGeneric
+  , DeriveDataTypeable
   , GeneralizedNewtypeDeriving
   , FlexibleInstances
   , MultiParamTypeClasses
@@ -16,12 +18,19 @@ import qualified Data.List.NonEmpty as NE
 
 import Data.Trie.Class
 
+import Data.Data
+import GHC.Generics
+import Control.DeepSeq
 import Test.QuickCheck
 
 
 newtype KnuthTrie s x = KnuthTrie
-  {unKnuthTrie :: KnuthForest (s, Maybe x)}
-  deriving (Show, Eq, Functor, Foldable, Traversable, Arbitrary)
+  { unKnuthTrie :: KnuthForest (s, Maybe x)
+  } deriving (Show, Eq, Functor, Foldable, Traversable, Arbitrary, Generic, Data, Typeable)
+
+instance ( NFData s
+         , NFData x
+         ) => NFData (KnuthTrie s x)
 
 instance Eq s => Trie NonEmpty s KnuthTrie where
   lookup _ (KnuthTrie Nil) = Nothing

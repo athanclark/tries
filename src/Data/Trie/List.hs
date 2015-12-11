@@ -2,6 +2,8 @@
     TypeFamilies
   , DeriveFunctor
   , DeriveFoldable
+  , DeriveGeneric
+  , DeriveDataTypeable
   , DeriveTraversable
   , GeneralizedNewtypeDeriving
   , FlexibleInstances
@@ -22,13 +24,20 @@ import Data.Key hiding (lookup)
 import Data.Monoid
 import Control.Monad
 
+import Data.Data
+import GHC.Generics
+import Control.DeepSeq
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+import Test.QuickCheck.Instances ()
 
 
 newtype ListTrie t x = ListTrie
   { unListTrie :: Tree (t, Maybe x)
-  } deriving (Show, Eq, Functor, Foldable, Traversable, Arbitrary)
+  } deriving (Show, Eq, Functor, Foldable, Traversable, Arbitrary, Generic, Data, Typeable)
+
+instance ( NFData t
+         , NFData x
+         ) => NFData (ListTrie t x)
 
 type instance Key (ListTrie s) = NonEmpty s
 -- TODO: Trie instance
@@ -60,4 +69,4 @@ instance Eq s => Trie NonEmpty s ListTrie where
                     then fmap (unListTrie . insert (NE.fromList ts) x . ListTrie) xs
                     else xs ++ [unListTrie $ insert (NE.fromList ts) x $ ListTrie $
                                   Node (head ts, Nothing) []]
-      hasHead t (Node (t',_) _) = t == t'
+      hasHead tag (Node (tag',_) _) = tag == tag'

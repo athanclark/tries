@@ -11,7 +11,6 @@ import qualified Data.ByteString as BS
 
 import Data.Function.Syntax
 import Data.Maybe (isJust, fromMaybe)
-import Data.Monoid
 import Data.Foldable as F
 import Data.Functor.Identity (Identity (..))
 -- import Data.Map.TernaryMap as TM
