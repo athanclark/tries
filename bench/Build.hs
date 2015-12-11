@@ -2,18 +2,15 @@ module Build where
 
 
 
-import           Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Tree (Tree (..))
 import Data.Trie.List              as L
 import Data.Trie.Map               as M
 import Data.Trie.HashMap           as HM
 import Data.Tree.Knuth.Forest      as K
 import Data.Trie.Knuth             as K
-import Data.Trie.Class             as TC
 import qualified Data.Map          as Map
 import qualified Data.HashMap.Lazy as HMap
-import Criterion.Main
 import Control.Monad.State
 
 
