@@ -1,31 +1,33 @@
-# tries
+tries
+====
 
-TODO: Write description here
+This is a collection and comparison of some basic, pure trie implementations.
 
-## Installation
+So far, there is:
 
-TODO: Write installation instructions here
+- a Map trie, using `Data.Map` from [containers](https://hackage.haskell.org/package/containers)
+- a List trie, using `Data.Tree` from [containers](https://hackage.haskell.org/package/containers)
+- a HashMap trie, using `Data.HashMap` from [unordered-containers](https://hackage.haskell.org/package/unordered-containers)
+- a Knuth trie, using `Data.Tree.Knuth` from [rose-trees](https://hackage.haskell.org/package/rose-trees)
 
-## Usage
+## Running the Tests
 
-### Creating `x`
-
-TODO: Write usage instructions here
-
-### Combining `x`
-
-TODO: Write usage instructions here
-
-### Consuming `x`
-
-TODO: Write usage instructions here
-
-## How to run tests
-
-```
-cabal configure --enable-tests && cabal build && cabal test
+```bash
+stack test
 ```
 
-## Contributing
+and
 
-TODO: Write contribution instructions here
+## Running the Benchmarks
+
+for insert / delete:
+
+```bash
+stack bench --benchmark-arguments="--output profile.html"
+```
+
+for lookups:
+
+```bash
+stack bench --benchmark-arguments="--output profile-lookup.html" --flag tries:Lookup
+```
