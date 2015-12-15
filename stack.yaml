@@ -1,11 +1,7 @@
 flags: {}
 packages:
 - '.'
-- location:
-    git: https://github.com/athanclark/rose-trees
-    commit: 0ef5352d858c6accabfb5bbb2797dd60b0e2af85
-  extra-dep: true
 extra-deps:
-  - rose-trees-0.0.2.1
+  - rose-trees-0.0.3
   - composition-extra-2.0.0
 resolver: nightly-2015-12-09
