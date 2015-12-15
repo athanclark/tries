@@ -41,34 +41,35 @@ getSucc = do
 
 
 genMapTrie :: Int -> MapTrie Int Int
-genMapTrie n = MapTrie $ MapStep $ Map.singleton 0
-  (Just 0, Just $ MapTrie $ MapStep $ genMapTree n)
+genMapTrie n = MapTrie . MapStep . Map.singleton 0 $
+  MapChildren (Just 0) $ Just . MapTrie . MapStep $ genMapTree n
   where
-    genMapTree :: Int -> Map.Map Int (Maybe Int, Maybe (MapTrie Int Int))
+    genMapTree :: Int -> Map.Map Int (MapChildren MapTrie Int Int)
     genMapTree n =
       Map.unions . flip evalState 1 $
         replicateM n $ do
           i <- getSucc
-          pure $ Map.singleton i ( Just 0
-                                 , if n <= 1
-                                   then Nothing
-                                   else Just . MapTrie . MapStep $ genMapTree (floor $ (fromIntegral n)/2)
-                                 )
+          pure $ Map.singleton i $
+                   MapChildren (Just 0) $
+                     if n <= 1
+                     then Nothing
+                     else Just . MapTrie . MapStep $ genMapTree (floor $ (fromIntegral n)/2)
+
 
 genHashMapTrie :: Int -> HashMapTrie Int Int
-genHashMapTrie n =
-  HashMapTrie $ HashMapStep $ HMap.singleton 0
-    (Just 0, Just . HashMapTrie . HashMapStep $ genHashMapTree n)
+genHashMapTrie n = HashMapTrie $ HashMapStep $ HMap.singleton 0 $
+  HashMapChildren (Just 0) $ Just . HashMapTrie . HashMapStep $ genHashMapTree n
   where
-    genHashMapTree :: Int -> HMap.HashMap Int (Maybe Int, Maybe (HashMapTrie Int Int))
+    genHashMapTree :: Int -> HMap.HashMap Int (HashMapChildren HashMapTrie Int Int)
     genHashMapTree n = HMap.unions $ flip evalState 1 $
       replicateM n $ do
         i <- getSucc
-        return $ HMap.singleton i ( Just 0
-                                  , if n <= 1
-                                    then Nothing
-                                    else Just . HashMapTrie . HashMapStep $ genHashMapTree (floor $ (fromIntegral n)/2)
-                                  )
+        return $ HMap.singleton i $
+                   HashMapChildren (Just 0) $
+                     if n <= 1
+                     then Nothing
+                     else Just . HashMapTrie . HashMapStep $ genHashMapTree (floor $ fromIntegral n / 2)
+
 
 
 -- | This one is ordered largest first
