@@ -1,9 +1,0 @@
-flags: {}
-packages:
-- '.'
-- '../sets'
-extra-deps:
-  - rose-trees-0.0.3
-  - composition-extra-2.0.0
-  - sets-0.0.5.2
-resolver: nightly-2016-06-30
