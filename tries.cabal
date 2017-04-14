@@ -38,7 +38,7 @@ Library
                       , semigroups
                       , sets >= 0.0.5.2
                       , unordered-containers
-                      , QuickCheck
+                      , QuickCheck >= 2.9.2
                       , quickcheck-instances
 
 Test-Suite test
@@ -68,6 +68,10 @@ Benchmark bench
   Build-Depends:        base
                       , tries
                       , criterion
+                      , rose-trees
+                      , mtl
+                      , unordered-containers
+                      , containers
 
 Benchmark bench-lookup
   if flag(Lookup)
@@ -83,6 +87,10 @@ Benchmark bench-lookup
   Build-Depends:        base
                       , tries
                       , criterion
+                      , rose-trees
+                      , mtl
+                      , unordered-containers
+                      , containers
 
 Source-Repository head
   Type:                 git

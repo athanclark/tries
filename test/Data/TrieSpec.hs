@@ -97,8 +97,3 @@ lookupDeleteNotExists :: ( Arbitrary (p s)
 lookupDeleteNotExists ps trie = isNothing $ lookup ps $ delete ps trie
 
 
-
--- Instances -------------
-
-instance Arbitrary a => Arbitrary (NonEmpty a) where
-  arbitrary = NE.fromList <$> arbitrary `suchThat` (not . null)
