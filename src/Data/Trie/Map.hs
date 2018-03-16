@@ -10,11 +10,13 @@
   , FlexibleInstances
   , FlexibleContexts
   , MultiParamTypeClasses
+  , RankNTypes
+  , ScopedTypeVariables
   #-}
 
 module Data.Trie.Map where
 
-import Data.Trie.Class
+import Data.Trie.Class (Trie (..))
 
 import Prelude hiding (lookup, null)
 import qualified Data.Map           as Map
@@ -23,14 +25,14 @@ import qualified Data.List.NonEmpty as NE
 
 import qualified Data.Key           as K
 import qualified Data.Foldable      as F
-import Data.Maybe
-import Data.Monoid
-import Control.Monad
+import Data.Maybe (fromMaybe, fromJust)
+import Data.Monoid (First (..), Last (..), (<>))
+import Control.Monad (replicateM)
 
-import Data.Data
-import GHC.Generics
-import Control.DeepSeq
-import Test.QuickCheck
+import Data.Data (Data, Typeable)
+import GHC.Generics (Generic)
+import Control.DeepSeq (NFData)
+import Test.QuickCheck (Arbitrary (..), resize, choose, sized, scale)
 import Test.QuickCheck.Instances ()
 
 
@@ -38,7 +40,7 @@ import Test.QuickCheck.Instances ()
 -- * One Step
 
 data MapChildren c p a = MapChildren
-  { mapNode     :: Maybe a
+  { mapNode     :: !(Maybe a)
   , mapChildren :: !(Maybe (c p a))
   } deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Generic, Data, Typeable)
 
@@ -51,7 +53,7 @@ instance ( Arbitrary a
          , Arbitrary p
          , Arbitrary (c p a)
          ) => Arbitrary (MapChildren c p a) where
-  arbitrary = MapChildren <$> arbitrary <*> scale (\n -> floor $ fromIntegral n / 2) arbitrary
+  arbitrary = MapChildren <$> arbitrary <*> scale (`div` 2) arbitrary
 
 instance ( Monoid (c p a)
          ) => Monoid (MapChildren c p a) where
@@ -79,7 +81,7 @@ instance ( Arbitrary a
     where
       go n = do
         i <- choose (0,n)
-        xs <- replicateM i $ (,) <$> arbitrary <*> resize (floor $ fromIntegral n / 2) arbitrary
+        xs <- replicateM i $ (,) <$> arbitrary <*> resize (n `div` 2) arbitrary
         return $ MapStep $ Map.fromList xs
 
 
@@ -93,9 +95,9 @@ instance ( Ord p
     | otherwise = lookup (NE.fromList ps) =<< mapChildren =<< Map.lookup p xs
   delete (p:|ps) (MapStep xs)
     | F.null ps = let mxs = mapChildren =<< Map.lookup p xs
-                  in  MapStep $! Map.insert p (MapChildren Nothing mxs) xs
-    | otherwise = let (MapChildren mx mxs) = fromMaybe (MapChildren Nothing Nothing) $! Map.lookup p xs
-                  in  MapStep $! Map.insert p (MapChildren mx $! delete (NE.fromList ps) <$> mxs) xs
+                  in  MapStep (Map.insert p (MapChildren Nothing mxs) xs)
+    | otherwise = let (MapChildren mx mxs) = fromMaybe (MapChildren Nothing Nothing) (Map.lookup p xs)
+                  in  MapStep (Map.insert p (MapChildren mx (delete (NE.fromList ps) <$> mxs)) xs)
 
 
 insert :: ( Ord p
@@ -104,10 +106,10 @@ insert :: ( Ord p
           ) => NonEmpty p -> a -> MapStep c p a -> MapStep c p a
 insert (p:|ps) x (MapStep xs)
   | F.null ps = let mxs = mapChildren =<< Map.lookup p xs
-                in  MapStep $! Map.insert p (MapChildren (Just x) mxs) xs
+                in  MapStep (Map.insert p (MapChildren (Just x) mxs) xs)
   | otherwise = let mx  = mapNode =<< Map.lookup p xs
                     xs' = fromMaybe mempty (mapChildren =<< Map.lookup p xs)
-                in  MapStep $! Map.insert p (MapChildren mx $ Just $! Data.Trie.Class.insert (NE.fromList ps) x xs') xs
+                in  MapStep (Map.insert p (MapChildren mx (Just (Data.Trie.Class.insert (NE.fromList ps) x xs'))) xs)
 
 {-# INLINEABLE insert #-}
 
@@ -123,7 +125,7 @@ empty :: MapStep c s a
 empty = MapStep Map.empty
 
 singleton :: s -> a -> MapStep c s a
-singleton p x = MapStep $ Map.singleton p $ MapChildren (Just x) Nothing
+singleton p x = MapStep (Map.singleton p (MapChildren (Just x) Nothing))
 
 
 -- * Fixpoint of Steps
@@ -134,8 +136,8 @@ newtype MapTrie s a = MapTrie
 
 instance Ord s => Trie NonEmpty s MapTrie where
   lookup ts (MapTrie xs)   = lookup ts xs
-  delete ts (MapTrie xs)   = MapTrie $ delete ts xs
-  insert ts x (MapTrie xs) = MapTrie $ Data.Trie.Map.insert ts x xs
+  delete ts (MapTrie xs)   = MapTrie (delete ts xs)
+  insert ts x (MapTrie xs) = MapTrie (Data.Trie.Map.insert ts x xs)
 
 type instance K.Key (MapTrie s) = NonEmpty s
 
@@ -147,15 +149,15 @@ instance Ord s => K.Lookup (MapTrie s) where
 
 -- * Conversion
 
-keys :: Ord s => MapTrie s a -> [NonEmpty s]
+keys :: forall s a. Ord s => MapTrie s a -> [NonEmpty s]
 keys (MapTrie (MapStep xs)) =
-  let ks = Map.keys xs
-  in F.concatMap go ks
+  F.concatMap go (Map.keys xs)
   where
-    go k = let (MapChildren _ mxs) = fromJust $ Map.lookup k xs
-           in  fmap (k :|) $ fromMaybe [] $ do
-                 xs' <- mxs
-                 return $ NE.toList <$> keys xs'
+    go :: s -> [NonEmpty s]
+    go k = let (MapChildren _ mxs) = fromJust (Map.lookup k xs)
+           in  case mxs of
+                 Nothing -> []
+                 Just xs' -> NE.cons k <$> keys xs'
 
 elems :: MapTrie s a -> [a]
 elems = F.toList
@@ -172,11 +174,13 @@ match :: Ord s => NonEmpty s -> MapTrie s a -> Maybe (NonEmpty s, a, [s])
 match (p:|ps) (MapTrie (MapStep xs)) = do
   (MapChildren mx mxs) <- Map.lookup p xs
   let mFoundHere = do x <- mx
-                      return (p:|[], x, ps)
-  if F.null ps then mFoundHere
-               else getFirst $ First (do (pre,y,suff) <- match (NE.fromList ps) =<< mxs
-                                         return (p:|NE.toList pre, y, suff))
-                            <> First mFoundHere
+                      pure (p:|[], x, ps)
+  if F.null ps
+  then mFoundHere
+  else getFirst $
+         First (do  (pre,y,suff) <- match (NE.fromList ps) =<< mxs
+                    pure (p:|NE.toList pre, y, suff))
+      <> First mFoundHere
 
 -- | Returns a list of all the nodes along the path to the furthest point in the
 -- query, in order of the path walked from the root to the furthest point.
@@ -187,9 +191,10 @@ matches (p:|ps) (MapTrie (MapStep xs)) =
             Map.lookup p xs
       foundHere = fromMaybe [] $ do x <- mx
                                     return [(p:|[],x,ps)]
-  in if F.null ps then foundHere
-                  else let rs = fromMaybe [] $ matches (NE.fromList ps) <$> mxs
-                       in foundHere ++ (prependAncestry <$> rs)
+  in  if F.null ps
+      then foundHere
+      else let rs = fromMaybe [] $ matches (NE.fromList ps) <$> mxs
+           in foundHere ++ (prependAncestry <$> rs)
   where prependAncestry (pre,x,suff) = (p:| NE.toList pre,x,suff)
 
 

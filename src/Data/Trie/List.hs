@@ -12,7 +12,7 @@
 
 module Data.Trie.List where
 
-import Data.Trie.Class
+import Data.Trie.Class (Trie (..))
 
 import Prelude hiding (lookup)
 import           Data.Tree (Tree (..))
@@ -21,13 +21,13 @@ import qualified Data.List.NonEmpty as NE
 
 import Data.Maybe (fromMaybe)
 import Data.Key hiding (lookup)
-import Data.Monoid
-import Control.Monad
+import Data.Monoid (First (..))
+import Control.Monad (guard)
 
-import Data.Data
-import GHC.Generics
-import Control.DeepSeq
-import Test.QuickCheck
+import Data.Data (Data, Typeable)
+import GHC.Generics (Generic)
+import Control.DeepSeq (NFData)
+import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
 
 

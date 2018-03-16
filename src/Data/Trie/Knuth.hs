@@ -16,12 +16,12 @@ import           Data.Tree.Knuth.Forest (KnuthForest (..))
 import           Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 
-import Data.Trie.Class
+import Data.Trie.Class (Trie (..))
 
-import Data.Data
-import GHC.Generics
-import Control.DeepSeq
-import Test.QuickCheck
+import Data.Data (Data, Typeable)
+import GHC.Generics (Generic)
+import Control.DeepSeq (NFData)
+import Test.QuickCheck (Arbitrary)
 
 
 newtype KnuthTrie s x = KnuthTrie

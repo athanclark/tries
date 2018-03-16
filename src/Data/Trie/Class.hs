@@ -9,11 +9,9 @@ import Prelude hiding (lookup)
 import qualified Data.Trie as BT
 import qualified Data.ByteString as BS
 
-import Data.Function.Syntax
-import Data.Maybe (isJust, fromMaybe)
+import Data.Maybe (isJust)
 import Data.Foldable as F
 import Data.Functor.Identity (Identity (..))
--- import Data.Map.TernaryMap as TM
 
 
 -- | Class representing tries with single-threaded insertion, deletion, and lookup.
@@ -24,29 +22,20 @@ class Trie p s t | t -> p where
   insert :: p s -> a -> t s a -> t s a
   delete :: p s -> t s a -> t s a
 
-lookupWithDefault :: Trie p s t => a -> p s -> t s a -> a
-lookupWithDefault x = fromMaybe x .* lookup
 
 
 
 member :: Trie p s t => p s -> t s a -> Bool
-member = isJust .* lookup
+member t = isJust . lookup t
 
 notMember :: Trie p s t => p s -> t s a -> Bool
-notMember = not .* member
+notMember t = not . member t
 
 -- * Conversion
 
 fromFoldable :: (Foldable f, Monoid (t s a), Trie p s t) => f (p s, a) -> t s a
 fromFoldable = F.foldr (uncurry insert) mempty
 
-
--- * Ternary Map
-
--- TODO
--- instance Ord k => Trie [] k TernaryMap where
---   lookup = TM.lookup
---   delete = TM.delete
 
 -- * ByteString-Trie
 
@@ -60,6 +49,6 @@ getBSTrie :: BSTrie BS.ByteString a -> BT.Trie a
 getBSTrie (BSTrie (_,x)) = x
 
 instance Trie Identity BS.ByteString BSTrie where
-  lookup = (BT.lookup *. snd . unBSTrie) . runIdentity
+  lookup (Identity ps) (BSTrie (_,xs)) = BT.lookup ps xs
   insert (Identity ps) x (BSTrie (q,xs)) = BSTrie (q, BT.insert ps x xs)
   delete (Identity ps) (BSTrie (q,xs)) = BSTrie (q, BT.delete ps xs)
