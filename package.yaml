@@ -1,5 +1,5 @@
 name:                tries
-version:             0.0.5
+version:             0.0.6
 github:              "athanclark/tries"
 license:             BSD3
 author:              "Athan Clark"
@@ -23,9 +23,8 @@ extra-source-files:
 description:         Please see the README on Github at <https://git.localcooking.com/tooling/tries#readme>
 
 dependencies:
-  - base >= 4.8 && < 5.0
+  - base >= 4.11 && < 5.0
   - bytestring
-  - bytestring-trie
   - composition
   - containers
   - deepseq
@@ -33,7 +32,7 @@ dependencies:
   - keys
   - rose-trees >= 0.0.2.1
   - semigroups
-  - sets >= 0.0.5.2
+  - sets >= 0.0.6
   - unordered-containers
   - QuickCheck >= 2.9.2
   - quickcheck-instances
@@ -60,7 +59,7 @@ tests:
     - quickcheck-instances
 
 benchmarks:
-  tries-bench-lookup:
+  tries-bench:
     main:                Main.hs
     source-dirs:         bench
     ghc-options:

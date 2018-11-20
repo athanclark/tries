@@ -1,11 +1,13 @@
--- This file has been generated from package.yaml by hpack version 0.21.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 022bdce10844410f3e9663fa23513d9739331172dc3fbd52e1a4c1e7af9485f3
+-- hash: b5b8b6262290f4b3819cf5059836cf61223454ee5d3f4ccebf373af29b582f66
 
 name:           tries
-version:        0.0.5
+version:        0.0.6
 synopsis:       Various trie implementations in Haskell
 description:    Please see the README on Github at <https://git.localcooking.com/tooling/tries#readme>
 category:       Data, Tree
@@ -17,8 +19,6 @@ copyright:      2018 Athan Clark
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
-
 extra-source-files:
     README.md
 
@@ -41,9 +41,8 @@ library
   ghc-options: -Wall
   build-depends:
       QuickCheck >=2.9.2
-    , base >=4.8 && <5.0
+    , base >=4.11 && <5.0
     , bytestring
-    , bytestring-trie
     , composition
     , containers
     , deepseq
@@ -52,7 +51,7 @@ library
     , quickcheck-instances
     , rose-trees >=0.0.2.1
     , semigroups
-    , sets >=0.0.5.2
+    , sets >=0.0.6
     , unordered-containers
   default-language: Haskell2010
 
@@ -67,9 +66,8 @@ test-suite tries-test
   ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
   build-depends:
       QuickCheck
-    , base >=4.8 && <5.0
+    , base >=4.11 && <5.0
     , bytestring
-    , bytestring-trie
     , composition
     , containers
     , deepseq
@@ -79,9 +77,37 @@ test-suite tries-test
     , quickcheck-instances
     , rose-trees >=0.0.2.1
     , semigroups
-    , sets >=0.0.5.2
+    , sets >=0.0.6
     , tasty
     , tasty-quickcheck
+    , tries
+    , unordered-containers
+  default-language: Haskell2010
+
+benchmark tries-bench
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Build
+      Paths_tries
+  hs-source-dirs:
+      bench
+  ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
+  build-depends:
+      QuickCheck >=2.9.2
+    , base >=4.11 && <5.0
+    , bytestring
+    , composition
+    , containers
+    , criterion
+    , deepseq
+    , hashable
+    , keys
+    , mtl
+    , quickcheck-instances
+    , rose-trees
+    , semigroups
+    , sets >=0.0.6
     , tries
     , unordered-containers
   default-language: Haskell2010
@@ -97,9 +123,8 @@ benchmark tries-bench-lookup
   ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
   build-depends:
       QuickCheck >=2.9.2
-    , base >=4.8 && <5.0
+    , base >=4.11 && <5.0
     , bytestring
-    , bytestring-trie
     , composition
     , containers
     , criterion
@@ -110,7 +135,7 @@ benchmark tries-bench-lookup
     , quickcheck-instances
     , rose-trees
     , semigroups
-    , sets >=0.0.5.2
+    , sets >=0.0.6
     , tries
     , unordered-containers
   default-language: Haskell2010

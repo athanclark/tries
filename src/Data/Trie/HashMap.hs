@@ -16,6 +16,7 @@
 module Data.Trie.HashMap where
 
 import Data.Trie.Class (Trie (..))
+import Data.Semigroup (Semigroup)
 import Data.Monoid (First (..), Last (..), (<>))
 import Data.Hashable (Hashable)
 import Data.Maybe (fromMaybe, fromJust)
@@ -52,12 +53,15 @@ instance ( Arbitrary a
          ) => Arbitrary (HashMapChildren c p a) where
   arbitrary = HashMapChildren <$> arbitrary <*> scale (`div` 2) arbitrary
 
+instance ( Semigroup (c p a)
+         ) => Semigroup (HashMapChildren c p a) where
+  (HashMapChildren mx mxs) <> (HashMapChildren my mys) =
+    HashMapChildren (getLast (Last mx <> Last my))
+                    (mxs <> mys)
+
 instance ( Monoid (c p a)
          ) => Monoid (HashMapChildren c p a) where
   mempty = HashMapChildren Nothing Nothing
-  mappend (HashMapChildren mx mxs) (HashMapChildren my mys) =
-    HashMapChildren (getLast (Last mx <> Last my))
-                    (mxs <> mys)
 
 newtype HashMapStep c p a = HashMapStep
   { unHashMapStep :: HM.HashMap p (HashMapChildren c p a)
@@ -122,11 +126,16 @@ insert (p:|ps) x (HashMapStep xs)
 
 instance ( Hashable p
          , Eq p
+         , Semigroup (c p a)
+         ) => Semigroup (HashMapStep c p a) where
+  (HashMapStep xs) <> (HashMapStep ys) =
+    HashMapStep (HM.unionWith (<>) xs ys)
+
+instance ( Hashable p
+         , Eq p
          , Monoid (c p a)
          ) => Monoid (HashMapStep c p a) where
   mempty = empty
-  mappend (HashMapStep xs) (HashMapStep ys) =
-    HashMapStep (HM.unionWith (<>) xs ys)
 
 empty :: HashMapStep c p a
 empty = HashMapStep HM.empty
@@ -141,7 +150,7 @@ singleton p x = HashMapStep (HM.singleton p (HashMapChildren (Just x) Nothing))
 
 newtype HashMapTrie p a = HashMapTrie
   { unHashMapTrie :: HashMapStep HashMapTrie p a
-  } deriving (Show, Eq, Functor, Foldable, Traversable, Monoid, Arbitrary)
+  } deriving (Show, Eq, Functor, Foldable, Traversable, Semigroup, Monoid, Arbitrary)
 
 
 instance ( Hashable p

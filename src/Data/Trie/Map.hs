@@ -26,6 +26,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Key           as K
 import qualified Data.Foldable      as F
 import Data.Maybe (fromMaybe, fromJust)
+import Data.Semigroup (Semigroup)
 import Data.Monoid (First (..), Last (..), (<>))
 import Control.Monad (replicateM)
 
@@ -55,12 +56,15 @@ instance ( Arbitrary a
          ) => Arbitrary (MapChildren c p a) where
   arbitrary = MapChildren <$> arbitrary <*> scale (`div` 2) arbitrary
 
+instance ( Semigroup (c p a)
+         ) => Semigroup (MapChildren c p a) where
+  (MapChildren mx mxs) <> (MapChildren my mys) =
+    MapChildren (getLast $ Last mx <> Last my)
+                (mxs <> mys)
+
 instance ( Monoid (c p a)
          ) => Monoid (MapChildren c p a) where
   mempty = MapChildren Nothing Nothing
-  mappend (MapChildren mx mxs) (MapChildren my mys) =
-    MapChildren (getLast $ Last mx <> Last my)
-                (mxs <> mys)
 
 
 newtype MapStep c p a = MapStep
@@ -113,13 +117,17 @@ insert (p:|ps) x (MapStep xs)
 
 {-# INLINEABLE insert #-}
 
+instance ( Ord s
+         , Semigroup (c s a)
+         ) => Semigroup (MapStep c s a) where
+  (MapStep xs) <> (MapStep ys) =
+    MapStep (Map.unionWith (<>) xs ys)
+
 
 instance ( Ord s
          , Monoid (c s a)
          ) => Monoid (MapStep c s a) where
   mempty = empty
-  mappend (MapStep xs) (MapStep ys) =
-    MapStep $ Map.unionWith (<>) xs ys
 
 empty :: MapStep c s a
 empty = MapStep Map.empty
@@ -132,7 +140,7 @@ singleton p x = MapStep (Map.singleton p (MapChildren (Just x) Nothing))
 
 newtype MapTrie s a = MapTrie
   { unMapTrie :: MapStep MapTrie s a
-  } deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Monoid, Arbitrary)
+  } deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Semigroup, Monoid, Arbitrary)
 
 instance Ord s => Trie NonEmpty s MapTrie where
   lookup ts (MapTrie xs)   = lookup ts xs

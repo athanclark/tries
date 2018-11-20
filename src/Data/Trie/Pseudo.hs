@@ -23,10 +23,12 @@ data PseudoTrie t a = More t (Maybe a) (NonEmpty (PseudoTrie t a))
                     | Nil
   deriving (Show, Eq, Functor, Foldable, Traversable)
 
+instance Eq t => Semigroup (PseudoTrie t a) where
+  (<>) = merge
+
 -- | Overwriting instance
 instance (Eq t) => Monoid (PseudoTrie t a) where
   mempty = Nil
-  mappend = merge
 
 beginsWith :: (Eq t) => PseudoTrie t a -> t -> Bool
 beginsWith Nil _ = False
