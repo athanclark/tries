@@ -16,7 +16,8 @@
 module Data.Trie.HashMap where
 
 import Data.Trie.Class (Trie (..))
-import Data.Monoid (First (..), Last (..), (<>))
+import Data.Semigroup ()
+import Data.Monoid (First (..), Last (..))
 import Data.Hashable (Hashable)
 import Data.Maybe (fromMaybe, fromJust)
 import qualified Data.Foldable      as F
@@ -52,12 +53,14 @@ instance ( Arbitrary a
          ) => Arbitrary (HashMapChildren c p a) where
   arbitrary = HashMapChildren <$> arbitrary <*> scale (`div` 2) arbitrary
 
+instance Semigroup (c p a) => Semigroup (HashMapChildren c p a) where
+  (HashMapChildren mx mxs) <> (HashMapChildren my mys) =
+    HashMapChildren (getLast (Last mx <> Last my))
+                    (mxs <> mys)
+
 instance ( Monoid (c p a)
          ) => Monoid (HashMapChildren c p a) where
   mempty = HashMapChildren Nothing Nothing
-  mappend (HashMapChildren mx mxs) (HashMapChildren my mys) =
-    HashMapChildren (getLast (Last mx <> Last my))
-                    (mxs <> mys)
 
 newtype HashMapStep c p a = HashMapStep
   { unHashMapStep :: HM.HashMap p (HashMapChildren c p a)
@@ -120,13 +123,11 @@ insert (p:|ps) x (HashMapStep xs)
 
 {-# INLINEABLE insert #-}
 
-instance ( Hashable p
-         , Eq p
-         , Monoid (c p a)
-         ) => Monoid (HashMapStep c p a) where
+instance (Hashable p, Eq p, Semigroup (c p a)) => Semigroup (HashMapStep c p a) where
+  (HashMapStep xs) <> (HashMapStep ys) = HashMapStep (HM.unionWith (<>) xs ys)
+
+instance (Hashable p, Eq p, Monoid (c p a)) => Monoid (HashMapStep c p a) where
   mempty = empty
-  mappend (HashMapStep xs) (HashMapStep ys) =
-    HashMapStep (HM.unionWith (<>) xs ys)
 
 empty :: HashMapStep c p a
 empty = HashMapStep HM.empty
@@ -141,12 +142,10 @@ singleton p x = HashMapStep (HM.singleton p (HashMapChildren (Just x) Nothing))
 
 newtype HashMapTrie p a = HashMapTrie
   { unHashMapTrie :: HashMapStep HashMapTrie p a
-  } deriving (Show, Eq, Functor, Foldable, Traversable, Monoid, Arbitrary)
+  } deriving (Show, Eq, Functor, Foldable, Traversable, Semigroup, Monoid, Arbitrary)
 
 
-instance ( Hashable p
-         , Eq p
-         ) => Trie NonEmpty p HashMapTrie where
+instance (Hashable p, Eq p) => Trie NonEmpty p HashMapTrie where
   lookup ts (HashMapTrie xs)   = lookup ts xs
   delete ts (HashMapTrie xs)   = HashMapTrie (delete ts xs)
   insert ts x (HashMapTrie xs) = HashMapTrie (Data.Trie.HashMap.insert ts x xs)

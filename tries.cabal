@@ -1,8 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.21.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 022bdce10844410f3e9663fa23513d9739331172dc3fbd52e1a4c1e7af9485f3
+-- hash: 1931b1f8ac64e0078568ba9564142c975a886a2d977e5307c5f995214e2a3900
 
 name:           tries
 version:        0.0.5
@@ -17,8 +19,6 @@ copyright:      2018 Athan Clark
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
-
 extra-source-files:
     README.md
 
