@@ -29,14 +29,11 @@ import Data.Maybe (fromMaybe, fromJust)
 import Data.Semigroup (Semigroup)
 import Data.Monoid (First (..), Last (..), (<>))
 import Control.Monad (replicateM)
-
 import Data.Data (Data, Typeable)
 import GHC.Generics (Generic)
 import Control.DeepSeq (NFData)
 import Test.QuickCheck (Arbitrary (..), resize, choose, sized, scale)
 import Test.QuickCheck.Instances ()
-
-
 
 -- * One Step
 
@@ -66,7 +63,6 @@ instance ( Monoid (c p a)
          ) => Monoid (MapChildren c p a) where
   mempty = MapChildren Nothing Nothing
 
-
 newtype MapStep c p a = MapStep
   { unMapStep :: Map.Map p (MapChildren c p a)
   } deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Generic, Data, Typeable)
@@ -91,9 +87,7 @@ instance ( Arbitrary a
 
 -- | No insertion instance - requires children nodes to be a monoid. Use @Data.Trie.Map.insert@
 -- instead.
-instance ( Ord p
-         , Trie NonEmpty p c
-         ) => Trie NonEmpty p (MapStep c) where
+instance (Ord p, Trie NonEmpty p c) => Trie NonEmpty p (MapStep c) where
   lookup (p:|ps) (MapStep xs)
     | F.null ps = mapNode =<< Map.lookup p xs
     | otherwise = lookup (NE.fromList ps) =<< mapChildren =<< Map.lookup p xs
@@ -102,7 +96,6 @@ instance ( Ord p
                   in  MapStep (Map.insert p (MapChildren Nothing mxs) xs)
     | otherwise = let (MapChildren mx mxs) = fromMaybe (MapChildren Nothing Nothing) (Map.lookup p xs)
                   in  MapStep (Map.insert p (MapChildren mx (delete (NE.fromList ps) <$> mxs)) xs)
-
 
 insert :: ( Ord p
           , Trie NonEmpty p c
@@ -122,7 +115,6 @@ instance ( Ord s
          ) => Semigroup (MapStep c s a) where
   (MapStep xs) <> (MapStep ys) =
     MapStep (Map.unionWith (<>) xs ys)
-
 
 instance ( Ord s
          , Monoid (c s a)

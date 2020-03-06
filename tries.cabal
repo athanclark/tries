@@ -1,21 +1,21 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b5b8b6262290f4b3819cf5059836cf61223454ee5d3f4ccebf373af29b582f66
+-- hash: e766ce2be02774b5d707923dee2459865936ab6e67c16be62c8afad060793f05
 
 name:           tries
 version:        0.0.6
 synopsis:       Various trie implementations in Haskell
-description:    Please see the README on Github at <https://git.localcooking.com/tooling/tries#readme>
+description:    Please see the README on Github at <https://github.com/athanclark/tries#readme>
 category:       Data, Tree
 homepage:       https://github.com/athanclark/tries#readme
 bug-reports:    https://github.com/athanclark/tries/issues
 author:         Athan Clark
-maintainer:     athan.clark@localcooking.com
-copyright:      2018 Athan Clark
+maintainer:     athan.clark@gmail.com
+copyright:      2018, 2019, 2020 Athan Clark
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple

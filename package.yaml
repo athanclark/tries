@@ -3,8 +3,8 @@ version:             0.0.6
 github:              "athanclark/tries"
 license:             BSD3
 author:              "Athan Clark"
-maintainer:          "athan.clark@localcooking.com"
-copyright:           "2018 Athan Clark"
+maintainer:          "athan.clark@gmail.com"
+copyright:           "2018, 2019, 2020 Athan Clark"
 category:            Data, Tree
 synopsis:            Various trie implementations in Haskell
 
@@ -20,7 +20,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://git.localcooking.com/tooling/tries#readme>
+description:         Please see the README on Github at <https://github.com/athanclark/tries#readme>
 
 dependencies:
   - base >= 4.11 && < 5.0

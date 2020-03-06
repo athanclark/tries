@@ -29,5 +29,5 @@ stack bench --benchmark-arguments="--output profile.html"
 for lookups:
 
 ```bash
-stack bench --benchmark-arguments="--output profile-lookup.html" --flag tries:Lookup
+stack bench --benchmark-arguments="--output profile-lookup.html" tries:bench:tries-bench-lookup
 ```

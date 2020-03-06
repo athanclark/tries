@@ -153,9 +153,7 @@ newtype HashMapTrie p a = HashMapTrie
   } deriving (Show, Eq, Functor, Foldable, Traversable, Semigroup, Monoid, Arbitrary)
 
 
-instance ( Hashable p
-         , Eq p
-         ) => Trie NonEmpty p HashMapTrie where
+instance (Hashable p, Eq p) => Trie NonEmpty p HashMapTrie where
   lookup ts (HashMapTrie xs)   = lookup ts xs
   delete ts (HashMapTrie xs)   = HashMapTrie (delete ts xs)
   insert ts x (HashMapTrie xs) = HashMapTrie (Data.Trie.HashMap.insert ts x xs)
