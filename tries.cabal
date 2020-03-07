@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e766ce2be02774b5d707923dee2459865936ab6e67c16be62c8afad060793f05
+-- hash: fe0d04e7a344b9e53e52738c37560b95ff14f96a007da20ca17bfe34baa83f83
 
 name:           tries
-version:        0.0.6
+version:        0.0.6.1
 synopsis:       Various trie implementations in Haskell
 description:    Please see the README on Github at <https://github.com/athanclark/tries#readme>
 category:       Data, Tree
