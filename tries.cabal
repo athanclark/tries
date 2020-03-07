@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fe0d04e7a344b9e53e52738c37560b95ff14f96a007da20ca17bfe34baa83f83
+-- hash: 28fc0214548e9c3bb27473bb46c6076b6435d31256fe34fc845077e5fba6faae
 
 name:           tries
 version:        0.0.6.1
@@ -15,7 +15,7 @@ homepage:       https://github.com/athanclark/tries#readme
 bug-reports:    https://github.com/athanclark/tries/issues
 author:         Athan Clark
 maintainer:     athan.clark@gmail.com
-copyright:      2018, 2019, 2020 Athan Clark
+copyright:      2015, 2016, 2017, 2018, 2019, 2020 Athan Clark
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
